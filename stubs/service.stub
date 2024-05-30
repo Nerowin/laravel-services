@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Services;
+
+use Nerow\Service;
+use Illuminate\Http\Request;
+use App\Models\{{ model }};
+
+class {{ class }} extends Service
+{
+    /**
+     * Define rules for each model fields
+     */
+    public function rules(Request $request): array
+    {
+        return [
+            //
+        ];
+    }
+}

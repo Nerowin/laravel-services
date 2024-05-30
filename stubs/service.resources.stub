@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Services;
+
+use Nerow\Service;
+use Illuminate\Http\Request;
+use App\Models\{{ model }};
+
+class {{ class }} extends Service
+{
+    /**
+     * Name of the model class
+     */
+    protected string $model;
+
+    /**
+     * Exclude fields from create/update
+     */
+    protected array $except = [];
+
+    /**
+     * Only create/update this fields
+     */
+    protected array $only = [];
+
+    /**
+     * Define rules for each model fields
+     */
+    public function rules(Request $request): array
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * Customize error messages for rules
+     */
+    public function messages(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * Allow field modification before rule validation
+     */
+    protected function beforeValidation(Request $request): array
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * Make a new DB instance
+     */
+    public function create(Request|array $attributes): {{ model }}
+    {
+        return parent::create($attributes);
+    }
+
+    /**
+     * Update an existing DB instance
+     */
+    public function update({{ model }}|int $id, Request|array $attributes): {{ model }}
+    {
+        return parent::update($id, $attributes);
+    }
+
+    /**
+     * Delete an instance from the DB
+     */
+    public function delete({{ model }}|int $id): {{ model }}
+    {
+        return parent::delete($id);
+    }
+}

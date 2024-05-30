@@ -1,0 +1,27 @@
+{
+    "name": "nerow/laravel-services",
+    "description": "Simple service package for Laravel",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Nerow\\Services\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Nerowin",
+            "email": "nerow.op@gmail.com"
+        }
+    ],
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nerow\\Services\\Providers\\ServiceProvider"
+            ],
+            "aliases": {
+                "Nerow\\Service": "Nerow\\Services\\Service"
+            }
+        }
+    }
+}
