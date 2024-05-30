@@ -35,7 +35,7 @@ class MakeService extends Command
         && $this->fail('Service already exists.');
 
         ServiceManager::makeServiceFolder()
-        && $this->fail('Unable to create services folder.');
+        || $this->fail('Unable to create services folder.');
 
         $serviceStub = ServiceManager::getStubFile($stubName);
         $serviceStub = str_replace('{{ class }}', $serviceName, $serviceStub);
