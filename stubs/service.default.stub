@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Services;
+
+use Nerow\Service as BaseService;
+
+class Service extends BaseService
+{
+    
+}
