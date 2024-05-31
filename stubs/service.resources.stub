@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use Illuminate\Http\Request;
+use App\Services\Service;
 use App\Models\{{ model }};
 
-class {{ class }} extends {{ service }}
+class {{ class }} extends Service
 {
     /**
      * Name of the model class

@@ -3,7 +3,7 @@
 namespace Nerow\Services\Console\Commands;
 
 use Illuminate\Console\Command;
-use Nerow\Services\ServiceManager;
+use Nerow\Services\Helpers\ServiceHelper;
 
 class MakeService extends Command
 {
@@ -13,8 +13,8 @@ class MakeService extends Command
      * @var string
      */
     protected $signature = 'make:service 
-                            {service : service name} 
-                            {--resources : generate default resources methods}';
+                            {service : Service name} 
+                            {--r|resources : Generate default resources methods}';
 
     /**
      * The console command description.
@@ -28,31 +28,20 @@ class MakeService extends Command
      */
     public function handle()
     {
-        $name = $this->argument('service');
+        [$name, $resource] = $this->getComputedOptions();
 
-        if (ServiceManager::serviceFileExist($name)) {
+        if (ServiceHelper::serviceFileExist($name)) {
             $this->fail('Service already exists.');
         }
 
-        if (! ServiceManager::makeServiceFolder()) {
-            $this->fail('Unable to create services folder.');
-        }
+        ServiceHelper::makeServiceFolder();
 
-        $stub = ServiceManager::getStubFile(
-            $this->option('resources') ? 'service.resources' : 'service'
-        );
+        $stub = ServiceHelper::getStubFile($resource ? 'service.resources' : 'service');
         $stub = str_replace('{{ class }}', $name, $stub);
         $stub = str_replace('{{ model }}', str_replace('Service', '', $name), $stub);
-        $stub = str_replace(
-            '{{ service }}',
-            ServiceManager::serviceFileExist('Service') ? 'Service' : 'Nerow\\Services\\Service',
-            $stub
-        );
 
-        if (ServiceManager::makeFileService($name, $stub)) {
-            $this->info('Service created successfully.');
-        } else {
-            $this->fail('Error encounter while attempting to create service file.');
-        }
+        ServiceHelper::makeServiceFile($name, $stub);
+        
+        $this->info('Service created successfully.');
     }
 }

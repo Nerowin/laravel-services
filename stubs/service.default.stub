@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
-abstract class Service extends \Nerow\Services\Service
+use Nerow\Services\Service as BaseService;
+
+abstract class Service extends BaseService
 {
     
 }

@@ -2,7 +2,7 @@
 
 namespace Nerow\Services\Providers;
 
-use Nerow\Services\ServiceManager;
+use Nerow\Services\Helpers\ServiceHelper;
 use Nerow\Services\Console\Commands\MakeService;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 
@@ -12,9 +12,9 @@ class ServiceProvider extends SupportServiceProvider
     {
         $this->commands(MakeService::class);
 
-        ServiceManager::makeServiceFolder()
-        && ! ServiceManager::serviceFileExist('Service')
-        && ($stub = ServiceManager::getStubFile('service.default'))
-        && ServiceManager::makeFileService('Service', $stub);
+        ServiceHelper::makeServiceFolder()
+        && ! ServiceHelper::serviceFileExist('Service')
+        && ($stub = ServiceHelper::getStubFile('service.default'))
+        && ServiceHelper::makeFileService('Service', $stub);
     }
 }

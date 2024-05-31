@@ -1,8 +1,8 @@
 <?php
 
-namespace Nerow\Services;
+namespace Nerow\Services\Helpers;
 
-class ServiceManager
+class ServiceHelper
 {
     public static function makeServiceFolder(): bool
     {
@@ -24,15 +24,15 @@ class ServiceManager
 
     public static function serviceFileExist(string $serviceName): bool
     {
-        return file_exists(static::getFileServicePath($serviceName));
+        return file_exists(static::getServiceFilePath($serviceName));
     }
 
-    public static function makeFileService(string $fileName, mixed $content): bool
+    public static function makeServiceFile(string $fileName, mixed $content): bool
     {
-        return file_put_contents(static::getFileServicePath($fileName), $content);
+        return file_put_contents(static::getServiceFilePath($fileName), $content);
     }
 
-    public static function getFileServicePath(string $fileName): string
+    public static function getServiceFilePath(string $fileName): string
     {
         return static::serviceFolderPath() . '\\' . $fileName . '.php';
     }
