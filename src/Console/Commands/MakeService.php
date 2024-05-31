@@ -28,26 +28,31 @@ class MakeService extends Command
      */
     public function handle()
     {
-        $serviceName = $this->argument('service');
-        $stubName    = $this->option('resources') ? 'service.resources' : 'service';
+        $name = $this->argument('service');
 
-        ServiceManager::serviceFileExist($serviceName)
-        && $this->fail('Service already exists.');
+        if (ServiceManager::serviceFileExist($name)) {
+            $this->fail('Service already exists.');
+        }
 
-        ServiceManager::makeServiceFolder()
-        || $this->fail('Unable to create services folder.');
+        if (! ServiceManager::makeServiceFolder()) {
+            $this->fail('Unable to create services folder.');
+        }
 
-        $serviceStub = ServiceManager::getStubFile($stubName);
-        $serviceStub = str_replace('{{ class }}', $serviceName, $serviceStub);
-        $serviceStub = str_replace('{{ model }}', str_replace('Service', '', $serviceName), $serviceStub);
-        $serviceStub = str_replace(
+        $stub = ServiceManager::getStubFile(
+            $this->option('resources') ? 'service.resources' : 'service'
+        );
+        $stub = str_replace('{{ class }}', $name, $stub);
+        $stub = str_replace('{{ model }}', str_replace('Service', '', $name), $stub);
+        $stub = str_replace(
             '{{ service }}',
             ServiceManager::serviceFileExist('Service') ? 'Service' : 'Nerow\Service',
-            $serviceStub
+            $stub
         );
 
-        ServiceManager::makeFileService($serviceName, $serviceStub)
-        && $this->info('Service created successfully.')
-        || $this->fail('Error encounter while attempting to create service file.');
+        if (ServiceManager::makeFileService($name, $stub)) {
+            $this->info('Service created successfully.');
+        } else {
+            $this->fail('Error encounter while attempting to create service file.');
+        }
     }
 }

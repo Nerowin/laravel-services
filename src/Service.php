@@ -100,7 +100,7 @@ abstract class Service
      */
     public function updateOrCreate(array $conditions, Request|array $attributes): Model
     {
-        $request = getRequest($attributes);
+        $request = $this->requestResolver($attributes);
 
         $model = $this->model::where($conditions)->first();
 
@@ -138,7 +138,7 @@ abstract class Service
     }
 
     /**
-     * Resolve an integer to a model
+     * Convert integer into model
      */
     protected function modelResolver(Model|int &$model): Model
     {
@@ -146,11 +146,19 @@ abstract class Service
     }
 
     /**
+     * Convert array into Request
+     */
+    protected function requestResolver(Request|array $request): Request
+    {
+        return is_array($request) ? new Request($request) : $request;
+    }
+
+    /**
      * Prepare the request
      */
     protected function prepare(Request|array $attributes, string $method): Request
     {
-        $request = getRequest($attributes);
+        $request = $this->requestResolver($attributes);
 
         foreach ($this->beforeValidation($request) as $key => $value) {
             if ($request->has($key)) $request->merge([$key => $value]);
