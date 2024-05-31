@@ -3,8 +3,8 @@
 namespace Nerow\Services\Providers;
 
 use Nerow\Services\ServiceManager;
-use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 use Nerow\Services\Console\Commands\MakeService;
+use Illuminate\Support\ServiceProvider as SupportServiceProvider;
 
 class ServiceProvider extends SupportServiceProvider
 {

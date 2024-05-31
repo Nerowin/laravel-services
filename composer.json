@@ -18,10 +18,7 @@
         "laravel": {
             "providers": [
                 "Nerow\\Services\\Providers\\ServiceProvider"
-            ],
-            "aliases": {
-                "Nerow\\Service": "Nerow\\Services\\Service"
-            }
+            ]
         }
     }
 }

@@ -45,7 +45,7 @@ class MakeService extends Command
         $stub = str_replace('{{ model }}', str_replace('Service', '', $name), $stub);
         $stub = str_replace(
             '{{ service }}',
-            ServiceManager::serviceFileExist('Service') ? 'Service' : 'Nerow\Service',
+            ServiceManager::serviceFileExist('Service') ? 'Service' : 'Nerow\\Services\\Service',
             $stub
         );
 
