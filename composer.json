@@ -14,7 +14,6 @@
         }
     ],
     "require": {},
-    "require-dev": {},
     "extra": {
         "laravel": {
             "providers": [
