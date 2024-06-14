@@ -5,7 +5,6 @@ namespace Nerow\Services;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 abstract class Service
 {
@@ -23,6 +22,19 @@ abstract class Service
      * Only create/update this fields
      */
     protected array $only = [];
+
+    public function __construct()
+    {
+        $this->model = $this->model ?? $this->getModelName();
+    }
+
+    /**
+     * Retrieves model name extract from the service name
+     */
+    protected function getModelName(): string
+    {
+        return '\App\Models\\' . str_replace(['\\', 'Service'], '', substr($this::class, strrpos($this::class, '\\')));
+    }
 
     /**
      * Define rules for each model fields
@@ -78,7 +90,11 @@ abstract class Service
             $this->sometimes($this->rules($request))
         );
 
-        if (empty($safe)) return $model;
+        if (empty($safe)) {
+            $model->touch();
+            
+            return $model;
+        }
 
         $model->update($safe);
 
@@ -115,26 +131,6 @@ abstract class Service
     public function duplicate(Model|int $model, ...$options): Model
     {
         return $this->create($this->modelResolver($model)->toArray(...$options));
-    }
-
-    public function __construct()
-    {
-        $this->model = $this->getModelName();
-    }
-
-    /**
-     * Retrieves model name extract from the service name
-     */
-    protected function getModelName(): string
-    {
-        $model = $this->model 
-            ?? "\App\Models\\" . Str::of(Str::afterLast($this::class, "\\"))->remove("Service");
-
-        if (! is_a($model, Model::class, true)) {
-            throw new \Exception("$model does not match " . Model::class);
-        }
-
-        return $model;
     }
 
     /**
@@ -212,7 +208,7 @@ abstract class Service
     protected function validationException(array $errors): ValidationException
     {
         foreach ($errors as $attribute => $messages) {
-            $key = \Str::before($attribute, '.');
+            $key = substr($attribute, 0, strpos($attribute, '.'));
 
             $errors[$key] = array_merge(data_get($errors, $key, []), $messages);
         }

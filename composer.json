@@ -1,6 +1,6 @@
 {
     "name": "nerow/laravel-services",
-    "description": "Simple service package for Laravel",
+    "description": "Simple service architecture package for Laravel",
     "type": "library",
     "autoload": {
         "psr-4": {
