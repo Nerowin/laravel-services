@@ -33,7 +33,15 @@ abstract class Service
      */
     protected function getModelName(): string
     {
-        return '\App\Models\\' . str_replace(['\\', 'Service'], '', substr($this::class, strrpos($this::class, '\\')));
+        return '\\App\\Models\\' . str_replace(['\\', 'Service'], '', substr($this::class, strrpos($this::class, '\\')));
+    }
+
+    /**
+     * Return the model name
+     */
+    public function getModel(): string
+    {
+        return $this->model;
     }
 
     /**
