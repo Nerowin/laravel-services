@@ -191,7 +191,7 @@ abstract class Service
     {
         foreach ($rules as &$value) {
             is_string($value)
-                ? $value = str_replace('required', 'sometimes|required')
+                ? $value = str_replace('required', 'sometimes|required', $value)
                 : array_unshift($value, 'sometimes');
         }
 
