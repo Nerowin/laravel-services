@@ -37,11 +37,24 @@ abstract class Service
     }
 
     /**
-     * Return the model name
+     * Return the model
      */
-    public function getModel(): string
+    public function getModel(): Model
     {
-        return $this->model;
+        return app($this->model);
+    }
+
+    /**
+     * Return all the model fields except hidden
+     */
+    public function getPublicFields(): array
+    {
+        $model = $this->getModel();
+
+        return array_diff([
+            ...$model->getFillable(),
+            ...$model->getDates()
+        ], $model->getHidden());
     }
 
     /**
