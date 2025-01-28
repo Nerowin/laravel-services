@@ -3,15 +3,15 @@
 namespace App\Services;
 
 use Illuminate\Http\Request;
-use App\Services\Service;
+use App\Services\MyService;
 use App\Models\{{ model }};
 
-class {{ class }} extends Service
+class {{ class }} extends MyService
 {
     /**
      * Define rules for each model fields
      */
-    public function rules(Request $request): array
+    public static function rules(?Request $request = null): array
     {
         return [
             //

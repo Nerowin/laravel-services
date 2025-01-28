@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+
+class ServiceSample extends MyService
+{
+    protected $model = \App\Models\User::class;
+    
+    public static function rules(?Request $request = null): array
+    {
+        return [
+            'name'     => ['create:required'],
+            'email'    => ['nullable', 'update:unique:users'],
+            'password' => ['required'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'password.required' => __('Ce n\'est pas sécurisé de ne pas mettre de mdp'),
+        ];
+    }
+
+    protected function beforeValidation(Request $request): array
+    {
+        return [
+            'name' => ucwords($request->name) // can add formatter for special char
+        ];
+    }
+
+    // How to protect creation with transaction and policies + log
+    public function create(Request|array $attributes): Model
+    {
+        if (! \Illuminate\Support\Facades\Gate::allows('create-user', $this->model)) {
+            abort(403);
+        }
+
+        try {
+            $model = \DB::transaction(function () use ($attributes) {
+                return parent::create($attributes);
+            });
+
+            // TODO log the result ex: $this->log('success', model:$model);
+        } catch(\Exception $e) {
+            // TODO log the result ex: $this->log('error', ...);
+        }
+
+        return $model;
+    }
+
+    //$this->log('success', ['content' => $relation->pluck('id')->toArray()], $model);*/
+}

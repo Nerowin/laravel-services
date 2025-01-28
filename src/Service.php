@@ -6,8 +6,10 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-abstract class Service
+class Service
 {
+    const IMPLICITE_RULES = ['create', 'update'];
+
     /**
      * Name of the model class
      */
@@ -23,18 +25,57 @@ abstract class Service
      */
     protected array $only = [];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Magic Methods
+    |--------------------------------------------------------------------------
+    */
+
     public function __construct()
     {
         $this->model = $this->model ?? $this->getModelName();
     }
 
-    /**
-     * Retrieves model name extract from the service name
-     */
-    protected function getModelName(): string
+    public static function __callStatic($name, $arguments)
     {
-        return '\\App\\Models\\' . str_replace(['\\', 'Service'], '', substr($this::class, strrpos($this::class, '\\')));
+        return (new static)->{'_' . $name}(...$arguments);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Overridable Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Define rules for each model fields
+     */
+    public static function rules(?Request $request = null): array
+    {
+        return [];
+    }
+
+    /**
+     * Customize error messages for rules
+     */
+    public function messages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Allow field modification before rule validation
+     */
+    protected function beforeValidation(Request $request): array
+    {
+        return [];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public Methods
+    |--------------------------------------------------------------------------
+    */
 
     /**
      * Return the model
@@ -58,37 +99,26 @@ abstract class Service
     }
 
     /**
-     * Define rules for each model fields
+     * Return rules adapted to the wanted method.
      */
-    public function rules(Request $request): array
+    public static function getRules(string $method, Request $request = null): array
     {
-        return [];
-    }
+        return array_map(function($line) use ($method) {
+            // If the rule line is in string format, make it to array
+            $line = is_string($line) ? explode('|', $line) : $line;
 
-    /**
-     * Customize error messages for rules
-     */
-    public function messages(): array
-    {
-        return [];
-    }
-
-    /**
-     * Allow field modification before rule validation
-     */
-    protected function beforeValidation(Request $request): array
-    {
-        return [];
+            return self::applyImplicitRules($line, $method);
+        }, static::rules($request));
     }
 
     /**
      * Make a new DB instance
      */
-    public function create(Request|array $attributes): Model
+    public function _create(Request|array $attributes): Model
     {
-        $request = $this->prepare($attributes, 'create');
+        $request = $this->prepare($attributes);
 
-        $safe = $this->validate($request->all(), $this->rules($request));
+        $safe = $this->validate($request->all(), self::getRules('create', $request));
 
         $model = $this->model::create($safe);
 
@@ -98,17 +128,17 @@ abstract class Service
     /**
      * Update an existing DB instance
      */
-    public function update(Model|int $model, Request|array $attributes): Model
+    public function _update(Model|int $model, Request|array $attributes): Model
     {
         $model = $this->modelResolver($model);
 
-        $request = $this->prepare($attributes, 'update');
+        $request = $this->prepare($attributes);
 
         $model->fill($request->all());
 
         $safe = $this->validate(
             $request->only(array_keys($model->getDirty())),
-            $this->sometimes($this->rules($request))
+            $this->sometimes(self::getRules('update', $request))
         );
 
         if (empty($safe)) {
@@ -127,7 +157,7 @@ abstract class Service
     /**
      * Delete an instance from the DB
      */
-    public function delete(Model|int $model): Model
+    public function _delete(Model|int $model): Model
     {
         return tap($this->modelResolver($model))->delete();
     }
@@ -135,23 +165,65 @@ abstract class Service
     /**
      * Update an instance from $confitions or make a new
      */
-    public function updateOrCreate(array $conditions, Request|array $attributes): Model
+    public function _updateOrCreate(array $conditions, Request|array $attributes): Model
     {
         $request = $this->requestResolver($attributes);
 
         $model = $this->model::where($conditions)->first();
 
         return empty($conditions) || ! $model
-            ? $this->create(array_merge($conditions, $request->all()))
-            : $this->update($model, $request);
+            ? $this->_create(array_merge($conditions, $request->all()))
+            : $this->_update($model, $request);
     }
 
     /**
      * Duplicate an instance
      */
-    public function duplicate(Model|int $model, ...$options): Model
+    public function _duplicate(Model|int $model, ...$options): Model
     {
-        return $this->create($this->modelResolver($model)->toArray(...$options));
+        return $this->_create($this->modelResolver($model)->toArray(...$options));
+    }
+
+    /**
+     * Aliasing of attach model method
+     */
+    public function _attach(string $relationName, Model|int $model, ...$args): Model
+    {
+        $model = $this->modelResolver($model);
+
+        $relation = $model->$relationName();
+
+        $relation->attach(...$args);
+
+        return $model;
+    }
+
+    /**
+     * Aliasing of detach model method
+     */
+    public function _detach(string $relationName, Model|int $model, mixed $ids = null): Model
+    {
+        $model = $this->modelResolver($model);
+
+        $relation = $model->$relationName();
+
+        $relation->detach($ids);
+
+        return $model;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Private Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Retrieves model name extract from the service name
+     */
+    protected function getModelName(): string
+    {
+        return '\\App\\Models\\' . str_replace(['\\', 'Service'], '', substr($this::class, strrpos($this::class, '\\')));
     }
 
     /**
@@ -173,7 +245,7 @@ abstract class Service
     /**
      * Prepare the request
      */
-    protected function prepare(Request|array $attributes, string $method): Request
+    protected function prepare(Request|array $attributes): Request
     {
         $request = $this->requestResolver($attributes);
 
@@ -181,20 +253,25 @@ abstract class Service
             if ($request->has($key)) $request->merge([$key => $value]);
         }
 
-        $collection = $request->collect();
+        return $request;
+    }
 
-        foreach (['except', 'only'] as $key) {
-            $values = $this->$key;
+    /**
+     * Apply implicit rules for create/update actions and remove the prefix if matching (ex: 'create:' or 'update:').
+     */
+    protected static function applyImplicitRules(array $line, string $method): array
+    {
+        return array_map(function($rule) use ($method) {
+            foreach (self::IMPLICITE_RULES as $action) {
+                if (stripos($rule, $action) === 0) {
+                    return $action == $method
+                        ? str_replace($action . ':', '', $rule)
+                        : null;
+                }
+            }
 
-            $values = collect($values)
-                ->merge(data_get($values, $method, []))
-                ->except(['create', 'update'])
-                ->toArray();
-
-            if (! empty($values)) $collection = $collection->$key($values);
-        }
-
-        return new Request($collection->toArray());
+            return $rule;
+        }, $line);
     }
 
     /**
@@ -235,33 +312,5 @@ abstract class Service
         }
 
         return ValidationException::withMessages($errors);
-    }
-
-    /**
-     * Aliasing of attach model method
-     */
-    protected function attach(string $relationName, Model|int $model, ...$args): Model
-    {
-        $model = $this->modelResolver($model);
-
-        $relation = $model->$relationName();
-
-        $relation->attach(...$args);
-
-        return $model;
-    }
-
-    /**
-     * Aliasing of detach model method
-     */
-    protected function detach(string $relationName, Model|int $model, mixed $ids = null): Model
-    {
-        $model = $this->modelResolver($model);
-
-        $relation = $model->$relationName();
-
-        $relation->detach($ids);
-
-        return $model;
     }
 }

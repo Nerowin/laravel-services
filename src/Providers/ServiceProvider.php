@@ -2,9 +2,9 @@
 
 namespace Nerow\Services\Providers;
 
-use Nerow\Services\Helpers\ServiceHelper;
-use Nerow\Services\Console\Commands\MakeService;
 use Illuminate\Support\ServiceProvider as SupportServiceProvider;
+use Nerow\Services\Console\Commands\MakeService;
+use Nerow\Tools\ServiceHelper;
 
 class ServiceProvider extends SupportServiceProvider
 {

@@ -13,12 +13,20 @@
             "email": "nerow.op@gmail.com"
         }
     ],
-    "require": {},
+    "require": {
+        "nerow/laravel-tools": "dev-main"
+    },
     "extra": {
         "laravel": {
             "providers": [
                 "Nerow\\Services\\Providers\\ServiceProvider"
             ]
+        }
+    },
+    "repositories": {
+        "laravel-tools": {
+            "type": "path",
+            "url": "C:\\Users\\bryan\\Desktop\\Workspace\\Laravel\\Packages\\nerow\\laravel-tools"
         }
     }
 }
