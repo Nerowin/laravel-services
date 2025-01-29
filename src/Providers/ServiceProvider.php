@@ -15,6 +15,6 @@ class ServiceProvider extends SupportServiceProvider
         ServiceHelper::makeServiceFolder()
         && ! ServiceHelper::serviceFileExist('Service')
         && ($stub = ServiceHelper::getStubFile('service.default'))
-        && ServiceHelper::makeFileService('Service', $stub);
+        && ServiceHelper::makeServiceFile('Service', $stub);
     }
 }

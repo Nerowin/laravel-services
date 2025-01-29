@@ -3,7 +3,7 @@
 namespace Nerow\Services\Console\Commands;
 
 use Illuminate\Console\Command;
-use Nerow\Services\Helpers\ServiceHelper;
+use Nerow\Tools\ServiceHelper;
 
 class MakeService extends Command
 {
