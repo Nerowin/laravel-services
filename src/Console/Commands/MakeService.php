@@ -14,7 +14,7 @@ class MakeService extends Command
      */
     protected $signature = 'make:service 
                             {service : Service name} 
-                            {--r|resources : Generate default resources methods}';
+                            {--r|resource : Generate default resources methods}';
 
     /**
      * The console command description.
@@ -28,18 +28,23 @@ class MakeService extends Command
      */
     public function handle()
     {
-        [$name, $resource] = $this->getComputedOptions();
-
+        $name = $this->argument('service');
+        
         if (ServiceHelper::serviceFileExist($name)) {
             $this->fail('Service already exists.');
         }
 
         ServiceHelper::makeServiceFolder();
 
-        $stub = ServiceHelper::getStubFile($resource ? 'service.resources' : 'service');
+        $resource = $this->option('resource') ? 'service.resources' : 'service';
+        $stub = ServiceHelper::getStubFile(__DIR__ . '\\..\\..\\..\\stubs\\' . $resource . '.stub');
+
+        if (! $stub) {
+            $this->fail('Stub not found.');
+        }
+
         $stub = str_replace('{{ class }}', $name, $stub);
         $stub = str_replace('{{ model }}', str_replace('Service', '', $name), $stub);
-
         ServiceHelper::makeServiceFile($name, $stub);
         
         $this->info('Service created successfully.');
