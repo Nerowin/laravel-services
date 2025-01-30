@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use App\Services\MyService;
 use App\Models\{{ model }};
@@ -46,24 +47,24 @@ class {{ class }} extends MyService
     /**
      * Make a new DB instance
      */
-    public function create(Request|array $attributes): {{ model }}
+    public function _create(Request|array $attributes): {{ model }}
     {
-        return parent::create($attributes);
+        return parent::_create($attributes);
     }
 
     /**
      * Update an existing DB instance
      */
-    public function update({{ model }}|int $id, Request|array $attributes): {{ model }}
+    public function _update(Model|int $id, Request|array $attributes): {{ model }}
     {
-        return parent::update($id, $attributes);
+        return parent::_update($id, $attributes);
     }
 
     /**
      * Delete an instance from the DB
      */
-    public function delete({{ model }}|int $id): {{ model }}
+    public function _delete(Model|int $id): {{ model }}
     {
-        return parent::delete($id);
+        return parent::_delete($id);
     }
 }

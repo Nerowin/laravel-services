@@ -231,7 +231,16 @@ class Service
      */
     protected function modelResolver(Model|int &$model): Model
     {
-        return is_int($model) ? $this->model::findOrFail($model) : $model;
+        if (is_int($model)) {
+            return $this->model::findOrFail($model);
+        }
+
+        $modelName = $this->getModelName();
+        if ($model instanceof $modelName) {
+            return $model;
+        }
+
+        throw new \Exception("Model must be of type $modelName::class, " . $model::class . '::class given');
     }
 
     /**
