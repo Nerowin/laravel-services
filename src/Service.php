@@ -92,10 +92,12 @@ class Service
     {
         $model = $this->getModel();
 
-        return array_diff([
+        $publicFields = array_diff([
             ...$model->getFillable(),
             ...$model->getDates()
         ], $model->getHidden());
+
+        return array_filter($publicFields, fn ($value) => !is_null($value));
     }
 
     /**
@@ -119,9 +121,9 @@ class Service
         $request = $this->prepare($attributes);
 
         $safe = $this->validate($request->all(), self::getRules('create', $request));
-
+        
         $model = $this->model::create($safe);
-
+        
         return $model;
     }
 
