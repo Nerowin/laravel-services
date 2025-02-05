@@ -8,22 +8,15 @@ use Illuminate\Http\Request;
 
 class Service
 {
-    const IMPLICITE_RULES = ['create', 'update'];
+    const CREATE = 'create';
+    const UPDATE = 'update';
 
     /**
      * Name of the model class
      */
     protected string $model;
 
-    /**
-     * Exclude fields from create/update
-     */
-    protected array $except = [];
-
-    /**
-     * Only create/update this fields
-     */
-    protected array $only = [];
+    protected string $uid;
 
     /*
     |--------------------------------------------------------------------------
@@ -33,6 +26,7 @@ class Service
 
     public function __construct()
     {
+        $this->uid = uniqid();
         $this->model = $this->model ?? $this->getModelName();
     }
 
@@ -92,12 +86,12 @@ class Service
     {
         $model = $this->getModel();
 
-        $publicFields = array_diff([
-            ...$model->getFillable(),
-            ...$model->getDates()
-        ], $model->getHidden());
+        $fields = array_merge($model->getFillable(), $model->getDates());
 
-        return array_filter($publicFields, fn ($value) => !is_null($value));
+        return array_filter(
+            array_diff($fields, $model->getHidden()),
+            fn ($value) => !is_null($value)
+        );
     }
 
     /**
@@ -120,7 +114,7 @@ class Service
     {
         $request = $this->prepare($attributes);
 
-        $safe = $this->validate($request->all(), self::getRules('create', $request));
+        $safe = $this->validate($request->all(), self::getRules(self::CREATE, $request));
         
         $model = $this->model::create($safe);
         
@@ -140,7 +134,7 @@ class Service
 
         $safe = $this->validate(
             $request->only(array_keys($model->getDirty())),
-            $this->sometimes(self::getRules('update', $request))
+            $this->sometimes(self::getRules(self::UPDATE, $request))
         );
 
         if (empty($safe)) {
@@ -273,7 +267,7 @@ class Service
     protected static function applyImplicitRules(array $line, string $method): array
     {
         return array_map(function($rule) use ($method) {
-            foreach (self::IMPLICITE_RULES as $action) {
+            foreach ([self::CREATE, self::UPDATE] as $action) {
                 if (stripos($rule, $action) === 0) {
                     return $action == $method
                         ? str_replace($action . ':', '', $rule)
