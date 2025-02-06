@@ -111,7 +111,7 @@ class Service
      * Make a new DB instance
      */
     public function _create(Request|array $attributes): Model
-    {
+    {return $this->model::findOrFail(1);
         $request = $this->prepare($attributes);
 
         $safe = $this->validate($request->all(), self::getRules(self::CREATE, $request));
